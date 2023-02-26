@@ -7,7 +7,7 @@ import open3d as o3d
 observations = torch.load("train_observations_lst.pt")
 
 print(observations[0].keys())
-step_index = 8 #3
+step_index = 15 #8 #3
 rgb_image = observations[step_index]['rgb'][:, 80:-80]
 depth_image = observations[step_index]['depth'][:, 80:-80]
 
@@ -37,8 +37,16 @@ pcd = o3d.geometry.PointCloud.create_from_depth_image(depth_map, intrinsic, extr
 # Create RGBD image from color and depth images
 rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
     o3d.geometry.Image(np.array(rgb_image)),
-    o3d.geometry.Image(np.array(depth_image))
+    o3d.geometry.Image(np.array(depth_image)),
+depth_scale=1,
+convert_rgb_to_intensity=False
 )
+
+vis = o3d.visualization.Visualizer()
+vis.create_window()
+vis.add_geometry(rgbd_image)
+import ipdb; ipdb.set_trace()
+vis.run()
 
 # Create point cloud from RGBD image
 pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
