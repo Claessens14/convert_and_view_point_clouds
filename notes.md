@@ -19,6 +19,12 @@ https://github.com/devendrachaplot/Object-Goal-Navigation/blob/master/model.py
 and usuage
 https://github.com/devendrachaplot/Object-Goal-Navigation/blob/master/model.py#L188
 
+aux task semantic labels
+sofa green
+chair yellowish orange
+wall orange
+window bright yellow
+https://github.com/niessner/Matterport/blob/master/metadata/mpcat40.tsv
 
 ```
 

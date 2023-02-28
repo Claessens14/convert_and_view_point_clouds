@@ -3,13 +3,14 @@
 import numpy as np
 import torch
 import open3d as o3d
-
+import matplotlib.pyplot as plt
 observations = torch.load("train_observations_lst.pt")
 
 step_index = 3#8 #3 #8 #15 #8 #3
-rgb_image = observations[step_index]['rgb']#[:, 80:-80]
-depth_image = observations[step_index]['depth']#[:, 80:-80]
-semantic_image = observations[step_index]['semantic']
+end = 5#len(observations[step_index])
+rgb_image = observations[step_index]['rgb'][:end]#[:, 80:-80]
+depth_image = observations[step_index]['depth'][:end]#[:, 80:-80]
+semantic_image = observations[step_index]['semantic'][:end]
 
 visualizer = o3d.visualization.Visualizer()
 
@@ -99,7 +100,6 @@ for x in semantic_image:
         class_obj = df['nyuClass'][df['index'] == y].values
         if len(class_obj) > 0:
             class_lst.append(class_obj[0])
-        import ipdb; ipdb.set_trace()
         if len(point) > 0:
             sem_img_sub_lst.append(point[0])
         else:
@@ -114,13 +114,31 @@ sem_img_arr = np.array(sem_img_lst, dtype=np.uint8)
 #semantic_point_cloud = np.vectorize(int_to_nyuColor_Rgb)(semantic_image)
 #mask = np.logical_not(np.equal(semeantic_point_cloud, None))
 #semantic_point_cloud = semantic_point_cloud.compress(mask)
-print(list(set(class_lst)))
+color_legend = {el:df['nyuColor'][df['nyuClass']==el].values[0] for el in class_lst} 
+print(color_legend)
+
+def colored_background(r, g, b, text):
+    # https://stackoverflow.com/questions/70519979/printing-with-rgb-background
+    return f'\033[48;2;{r};{g};{b}m{text}\033[0m'
+
+for class_name in color_legend:
+    rgb = color_legend[class_name]
+    print(colored_background(rgb[0], rgb[1], rgb[2], class_name))
+
+
+#o3d.visualization.gui.Label.text = 'hello'
+#o3d.visualization.gui.Label("hello4")
+#text = o3d.geometry.Text("Legend", 10)
+#text.paint_uniform_color([1, 1, 1]) # set text color
+
+# Add point cloud and text to viewport
 
 import colorsys
 def make_rgb_palette(n=40):
     HSV_tuples = [(x*1.0/n, 0.8, 0.8) for x in range(n)]
     RGB_map = np.array(list(map(lambda x: colorsys.hsv_to_rgb(*x), HSV_tuples)))
     return RGB_map
+
 
 colors = make_rgb_palette(45)
 semantic_colors = colors[semantic_image % 45] * 255
@@ -133,10 +151,10 @@ semantic_depth_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
 depth_scale=1,
 convert_rgb_to_intensity=False
 )
-vis = o3d.visualization.Visualizer()
-vis.create_window()
-vis.add_geometry(semantic_depth_image)
-vis.run()
+#vis = o3d.visualization.Visualizer()
+#vis.create_window()
+#vis.add_geometry(semantic_depth_image)
+#vis.run()
 
 # Create point cloud from RGBD image
 pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
@@ -145,6 +163,22 @@ pcd = o3d.geometry.PointCloud.create_from_rgbd_image(
         width=640, height=480, fx=500, fy=500, cx=320, cy=240
     )
 )
+
+
+sem_img_flat_idx = semantic_image.reshape(640*end, 1)
+sem_img_flat_col_arr = sem_img_arr.reshape(640*end, 1, 3)
+points = np.asarray(pcd.points)
+#C = np.array ( [ [255, 0, 01, [0, 255, 01, (0, 0, 255]])
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection = '3d')
+ax.scatter(points[:,0],points[:,1], points[:,2]) # c = sem_img_flat_col_arr/255.0)
+#ax. scatter(points, c = sem_img_flat_arr/255.0)
+#ax.scatter(points[:,0],points[:,1], points[:,2]), c = sem_img_flat_col_arr/255.0)
+import ipdb; ipdb.set_trace()
+for i in range(len(sem_img_flat_col_arr)):
+    ax.scatter(points[i,0],points[i,1], points[i,2], color = sem_img_flat_col_arr[i]/255.0)
+plt.show()
 
 vis = o3d.visualization.Visualizer()
 vis.create_window()
