@@ -1,8 +1,5 @@
 
-
-
 # ================================ semantic-depth image to point cloud function  ==============
-
 
 import numpy as np
 import torch
