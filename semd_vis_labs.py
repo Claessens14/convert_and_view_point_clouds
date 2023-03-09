@@ -17,14 +17,30 @@ def make_rgb_palette(n=40):
     return RGB_map
 colors = make_rgb_palette(45)
 # label is a target label, keep it, if now, change it to 1000
-sem_matx_lst = []
+sem_matx_lst = []; label_name = 'category'
 tsv_name = 'matterport_category_mappings'; df = pd.read_csv(tsv_name+'.tsv', sep='  +')
 for x in semantic_image:
     sub_sem_lst = []
     for y in x:
-        
-        sub_sem_lst.append(y if df['category'][df['index'] == y+1].str.contains('wall|door|floor|ceiling').values else 1000)
+        sub_sem_lst.append(y+1 if df[label_name][df['index'] == y+1].str.contains('wall|door|floor|ceiling').values else 20)
     sem_matx_lst.append(sub_sem_lst)
+
+def colored_background(red, g, b, text):
+    # https://stackoverflow.com/questions/70519979/printing-with-rgb-background
+    # return a string that shows background rgb colours in bash terminals. may need tmux to show
+    return f"\033[48;2;{red};{g};{b}m{text}\033[0m"
+
+sem_unique_idx_lst = [el for el in set([el  for row in sem_matx_lst for el in row])]
+sem_unique_label_lst = df.loc[df['index'].isin(sem_unique_idx_lst), label_name].values.tolist() #df[label_name][df['index']==sem_unique_idx_lst].values.tolist()
+sem_unique_col_lst = colors[np.array(sem_unique_idx_lst) % 45] * 255
+for i in range(len(sem_unique_col_lst)):
+    red, g, b = sem_unique_col_lst[i][0], sem_unique_col_lst[i][1], sem_unique_col_lst[i][2]
+    red, g, b = int(red), int(g), int(b)
+    if sem_unique_idx_lst[i] == 20:
+        text = "    OTHER"
+    else: 
+        text = str(sem_unique_idx_lst[i])+" "+sem_unique_label_lst[i] 
+    print(colored_background(red, g, b, text))
 semantic_image = np.array(sem_matx_lst)
 semantic_colors = colors[semantic_image % 45] * 255
 semantic_colors = semantic_colors.astype(np.uint8)

@@ -75,7 +75,7 @@ else:
             if len(point) > 0:
                 sem_img_sub_lst.append(point[0])
             else:
-                sem_img_sub_lst.append(np.array([200,200,200], dtype=np.uint8))
+                sem_img_sub_lst.append(np.array([0,0,0], dtype=np.uint8))
         # TODO -- unequal arrs this will crash 
         try:
             sem_img_sub_arr = np.array(sem_img_sub_lst, dtype=np.uint8)
@@ -92,6 +92,7 @@ color_legend = {el:(df[class_name + "_color"][df[class_name]==el].values[0],
 print(color_legend)
 def colored_background(r, g, b, text):
     # https://stackoverflow.com/questions/70519979/printing-with-rgb-background
+    print(r, g, b, text)
     return f"\033[48;2;{r};{g};{b}m{text}\033[0m"
 for class_name in color_legend:
     (rgb, index) = color_legend[class_name]
