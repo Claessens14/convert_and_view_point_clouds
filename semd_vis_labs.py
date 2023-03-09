@@ -22,7 +22,7 @@ tsv_name = 'matterport_category_mappings'; df = pd.read_csv(tsv_name+'.tsv', sep
 for x in semantic_image:
     sub_sem_lst = []
     for y in x:
-        sub_sem_lst.append(y if y!=0 and df['category'][df['index'] == y].values[0] in ['wall', 'door', 'floor', 'ceiling'] else 1000)
+        sub_sem_lst.append(y if df['category'][df['index'] == y+1].values[0] in ['wall', 'door', 'floor', 'ceiling'] else 1000)
     sem_matx_lst.append(sub_sem_lst)
 semantic_image = np.array(sem_matx_lst)
 semantic_colors = colors[semantic_image % 45] * 255
