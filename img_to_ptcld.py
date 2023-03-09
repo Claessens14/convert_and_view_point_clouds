@@ -21,18 +21,24 @@ semantic_image = observations[step_index]['semantic'][:end]
 
 #===================================== semantic =======================
 tsv_name = "hm3dsem_category_mappings"; df = pd.read_csv(tsv_name+'.tsv', sep='\t')
-#tsv_name = 'matterport_category_mappings'; df = pd.read_csv(tsv_name+'.tsv', sep='  +')
+tsv_name = 'matterport_category_mappings'; df = pd.read_csv(tsv_name+'.tsv', sep='  +')
 class_name = 'category'; filename = f"sem_img_arr-stepIdx_{step_index}_{class_name}_{tsv_name}.pt"
 sem_img_arr = None; sem_img_lst = []; class_lst = []
 def add_color_columns():
     import seaborn as sns
     classes = df[class_name].unique(); n_colors = len(classes)
-    color_palette = sns.color_palette("husl", n_colors)
-    palette_rgb = []
-    for color in color_palette:
+    color_palette = sns.color_palette("husl", 42)
+    palette_rgb = []; r = n_colors % 42; quotient = n_colors // 42
+    for color in color_palette: # scaling
         color_rgb = tuple(int(x * 255) for x in color)
         palette_rgb.append(color_rgb) 
-    class_color_dict = dict(zip(classes, palette_rgb))
+    temp = []
+    for _ in range(quotient-1):
+        temp.extend(palette_rgb)
+    temp.extend(palette_rgb[:r]); palette_rgb = temp
+    #palette_rgb = [rgb for rgb in palette_rgb for _ in range(quotient)].append([palette_rgb[i] for i in range(r)])
+    palette_rgb = temp
+    class_color_dict = dict(zip(classes, palette_rgb)) # TODO string matching probably takes significantly longer
     df[class_name + "_color"] = df[class_name].map(class_color_dict)
     class_color_index_dict = dict(zip(classes, np.arange(len(classes))))
     df[class_name+'_color_index'] = df[class_name].map(class_color_index_dict)
@@ -57,9 +63,13 @@ else:
     for x in semantic_image:
         sem_img_sub_lst = []
         for y in x:
-            print(df.head()); exit()
-            point = df[class_name + "_color"][df['index'] == y].values
-            class_obj = df[class_name][df['index'] == y].values
+            piont = None; class_obj = None
+            if tsv_name == 'hm3dsem_category_mappings':
+                point = df.loc[y][class_name + "_color"]
+                class_obj = df.loc[y][class_name]
+            else:
+                point = df[class_name + "_color"][df['index'] == y].values
+                class_obj = df[class_name][df['index'] == y].values
             if len(class_obj) > 0:
                 class_lst.append(class_obj[0])
             if len(point) > 0:
@@ -77,14 +87,15 @@ else:
 #semantic_point_cloud = np.vectorize(int_to_nyuColor_Rgb)(semantic_image)
 #mask = np.logical_not(np.equal(semeantic_point_cloud, None))
 #semantic_point_cloud = semantic_point_cloud.compress(mask)
-color_legend = {el:df[class_name + "_color"][df[class_name]==el].values[0] for el in class_lst} 
+color_legend = {el:(df[class_name + "_color"][df[class_name]==el].values[0],
+    df["index"][df[class_name]==el].values[0]) for el in set(class_lst)} 
 print(color_legend)
 def colored_background(r, g, b, text):
     # https://stackoverflow.com/questions/70519979/printing-with-rgb-background
     return f"\033[48;2;{r};{g};{b}m{text}\033[0m"
 for class_name in color_legend:
-    rgb = color_legend[class_name]
-    print(colored_background(rgb[0], rgb[1], rgb[2], class_name))
+    (rgb, index) = color_legend[class_name]
+    print(colored_background(rgb[0], rgb[1], rgb[2], str(index)+" " + class_name))
 #o3d.visualization.gui.Label.text = 'hello'
 #o3d.visualization.gui.Label("hello4")
 #text = o3d.geometry.Text("Legend", 10)
