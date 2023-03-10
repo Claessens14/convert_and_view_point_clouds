@@ -8,7 +8,7 @@ the env we are loadeding.
 Jacob Claessens March 9th
 """
 
-observations = torch.load("train_observations_lst_v2.pt")
+observations = torch.load("train_observations_lst_v2.pt")['observation_lst']
 step_index = 3#8#3#8 #3 #8 #15 #8 #3
 semantic_image = observations[step_index]['semantic'].squeeze()
 
@@ -25,7 +25,7 @@ df = pd.read_csv('gjhYih4upQ9.semantic.txt', sep=',')
 for x in semantic_image:
     sub_sem_lst = []
     for y in x:
-        sub_sem_lst.append(y+1 if df[label_name][df['index'] == y+1].str.contains('wall|door|floor|ceiling').values else 20)
+        sub_sem_lst.append(y if df[label_name][df['index'] == y].str.contains('wall|door|floor|ceiling|window').values else 20)
     sem_matx_lst.append(sub_sem_lst)
 
 def colored_background(red, g, b, text):
@@ -34,6 +34,7 @@ def colored_background(red, g, b, text):
     return f"\033[48;2;{red};{g};{b}m{text}\033[0m"
 
 sem_unique_idx_lst = [el for el in set([el  for row in sem_matx_lst for el in row])]
+import ipdb; ipdb.set_trace()
 sem_unique_label_lst = df.loc[df['index'].isin(sem_unique_idx_lst), label_name].values.tolist() #df[label_name][df['index']==sem_unique_idx_lst].values.tolist()
 sem_unique_col_lst = colors[np.array(sem_unique_idx_lst) % 45] * 255
 for i in range(len(sem_unique_col_lst)):
