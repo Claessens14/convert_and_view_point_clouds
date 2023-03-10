@@ -27,7 +27,10 @@ color_mod_divisor = 10
 colors = make_rgb_palette(color_mod_divisor)
 # label is a target label, keep it, if now, change it to 1000
 sem_matx_lst = []; label_name = 'category'
-df = pd.read_csv('gjhYih4upQ9.semantic.txt', sep=',')
+#df = pd.read_csv('gjhYih4upQ9.semantic.txt', sep=',')
+df = pd.read_csv('gjhYih4upQ9.semantic.txt',  names=['index','iDontKnow','category','num'], header=1)
+new_row = [0,"DFDDF5","zero_value",1]
+df.loc[len(df)] = new_row
 
 sem_unique_lab_lst = []
 for x in semantic_image:
