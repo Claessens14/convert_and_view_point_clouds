@@ -1,4 +1,5 @@
 index,iDontKnow,category,num
+0,DFDDF5,"zero_value",1
 1,DFDDC5,"floor",1
 2,C240AE,"wall",1
 3,960079,"wall",1
